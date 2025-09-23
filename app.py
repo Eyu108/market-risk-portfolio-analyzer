@@ -10,7 +10,8 @@ import streamlit as st
 from risklab.beta import rolling_beta
 from risklab.data import get_prices, pct_returns
 from risklab.factors import factor_regression
-from risklab.garch import fit_garch, forecast_vol
+from risklab.garch import fit_garch  # will raise if `arch` not installed
+from risklab.garch import forecast_vol
 from risklab.metrics import (annualize_return, annualize_vol, drawdown,
                              hit_rate, max_drawdown, sharpe, sortino)
 from risklab.portfolio import allocate_static
@@ -36,13 +37,26 @@ PALETTES = {
 }
 TEMPLATES = ["plotly_dark", "plotly", "simple_white", "ggplot2", "seaborn"]
 
+# ---------- EWMA fallback (Option B) ----------
+def ewma_vol_forecast(ret: pd.Series, lam: float = 0.94, horizon: int = 20) -> np.ndarray:
+    """
+    RiskMetrics-style EWMA one-step-ahead daily volatility.
+    Returns a flat forecast (same sigma) for `horizon` days.
+    """
+    r = pd.Series(ret).dropna()
+    if r.empty:
+        return np.array([])
+    var_series = r.ewm(alpha=1 - lam, adjust=False).var(bias=False)
+    sigma_t = float(np.sqrt(var_series.iloc[-1])) if not var_series.empty else np.nan
+    if np.isnan(sigma_t):
+        return np.array([])
+    return np.full(horizon, sigma_t, dtype=float)
+
 # ---------- defaults ----------
 if "params" not in st.session_state:
     st.session_state.params = {
         "provider": "Stooq",  # <-- limited to Stooq or CSV only
-        "tick_tbl": pd.DataFrame(
-            {"Ticker": ["SPY", "XLE", "CVX"], "Weight": [0.5, 0.25, 0.25]}
-        ),
+        "tick_tbl": pd.DataFrame({"Ticker": ["SPY", "XLE", "CVX"], "Weight": [0.5, 0.25, 0.25]}),
         "tickers_fallback": "SPY, XLE, CVX",
         "weights_fallback": "0.5, 0.25, 0.25",
         "benchmark_choice": "SPY",
@@ -93,10 +107,7 @@ with st.sidebar:
                 "Weight": st.column_config.NumberColumn(
                     "Weight",
                     help="Portfolio weight (fraction). Use **Normalize** if they don't sum to 1.",
-                    min_value=0.0,
-                    max_value=1.0,
-                    step=0.01,
-                    format="%.4f",
+                    min_value=0.0, max_value=1.0, step=0.01, format="%.4f",
                 ),
             },
             hide_index=True,
@@ -105,10 +116,7 @@ with st.sidebar:
         tickers_fallback = P["tickers_fallback"]
         weights_fallback = P["weights_fallback"]
     else:
-        st.info(
-            "`pyarrow` not installed → falling back to simple inputs. "
-            "Install with `python -m pip install pyarrow==17.0.0` for a table editor."
-        )
+        st.info("`pyarrow` not installed → simple inputs. Install `pyarrow==17.0.0` for the table editor.")
         tickers_fallback = st.text_input("Tickers (comma-separated)", P["tickers_fallback"])
         weights_fallback = st.text_input("Weights (comma-separated)", P["weights_fallback"])
         tks = [t.strip() for t in tickers_fallback.split(",") if t.strip()]
@@ -149,13 +157,13 @@ with st.sidebar:
 
     with st.expander("Appearance", expanded=False):
         template = st.selectbox("Chart template", TEMPLATES, index=TEMPLATES.index(P["template"]))
-        palette_name = st.selectbox(
-            "Color palette", list(PALETTES.keys()), index=list(PALETTES.keys()).index(P["palette"])
-        )
+        palette_name = st.selectbox("Color palette", list(PALETTES.keys()),
+                                    index=list(PALETTES.keys()).index(P["palette"]))
         accent = st.color_picker("Accent color", P["accent"])
 
     with st.expander("Advanced", expanded=False):
-        interval = st.selectbox("Data interval", ["1d", "1wk", "1mo"], index=["1d", "1wk", "1mo"].index(P["interval"]))
+        interval = st.selectbox("Data interval", ["1d", "1wk", "1mo"],
+                                index=["1d", "1wk", "1mo"].index(P["interval"]))
         retries = st.slider("Retries per ticker", 0, 6, P["retries"])
         pause = st.slider("Pause between retries (sec)", 0.0, 3.0, float(P["pause"]), 0.1)
 
@@ -203,21 +211,15 @@ if submitted:
     P = st.session_state.params
 
 # ---------- parse inputs ----------
-tbl = P["tick_tbl"] if HAS_PYARROW else pd.DataFrame(
-    {
-        "Ticker": [t.strip() for t in P["tickers_fallback"].split(",") if t.strip()],
-        "Weight": (
-            [float(x.strip()) for x in P["weights_fallback"].split(",")]
-            if P["weights_fallback"].strip()
-            else []
-        ),
-    }
-)
+tbl = P["tick_tbl"] if HAS_PYARROW else pd.DataFrame({
+    "Ticker": [t.strip() for t in P["tickers_fallback"].split(",") if t.strip()],
+    "Weight": ([float(x.strip()) for x in P["weights_fallback"].split(",")]
+               if P["weights_fallback"].strip() else []),
+})
 tbl["Ticker"] = tbl["Ticker"].astype(str).str.strip()
 tbl = tbl[tbl["Ticker"] != ""]
 tickers = tbl["Ticker"].tolist()
 weights_vals = tbl["Weight"].astype(float).tolist() if "Weight" in tbl else []
-
 if P["normalize"] and weights_vals:
     ssum = sum(weights_vals)
     weights_vals = [w / ssum if ssum != 0 else 0.0 for w in weights_vals]
@@ -237,22 +239,15 @@ template = P["template"]
 @st.cache_data(show_spinner="Fetching prices...", ttl=3600)
 def fetch_prices(all_syms, start, end, interval, retries, pause, provider, map_tsx_to_us):
     return get_prices(
-        all_syms,
-        start=start,
-        end=end,
-        interval=interval,
-        retries=retries,
-        pause=pause,
-        provider=provider,          # "Stooq" or "CSV only" (we stop before calling when CSV only)
-        map_tsx_to_us=map_tsx_to_us,
+        all_syms, start=start, end=end, interval=interval,
+        retries=retries, pause=pause, provider=provider, map_tsx_to_us=map_tsx_to_us,
     )
 
 uploaded_prices_df = st.session_state.get("uploaded_prices_df")
-
 if uploaded_prices_df is not None:
     prices = uploaded_prices_df.copy()
 else:
-    if provider == "CSV only":
+    if P["provider"] == "CSV only":
         st.warning("Data source is set to CSV only. Upload a prices CSV in the sidebar.")
         st.stop()
     all_syms = tickers + ([benchmark] if benchmark else [])
@@ -260,14 +255,8 @@ else:
         st.info("Add at least one ticker row, then click **Apply / Refresh**.")
         st.stop()
     prices = fetch_prices(
-        all_syms,
-        P["start"],
-        P["end"],
-        P["interval"],
-        P["retries"],
-        P["pause"],
-        P["provider"],
-        P["map_tsx_to_us"],
+        all_syms, P["start"], P["end"], P["interval"],
+        P["retries"], P["pause"], P["provider"], P["map_tsx_to_us"]
     )
 
 rets = pct_returns(prices)
@@ -317,14 +306,8 @@ with tab1:
 
     perf_plot = perf_df.reset_index().rename(columns={"index": "Date"})
     st.plotly_chart(
-        px.line(
-            perf_plot,
-            x="Date",
-            y=perf_df.columns,
-            title="Cumulative Wealth",
-            template=template,
-            color_discrete_sequence=colors,
-        ),
+        px.line(perf_plot, x="Date", y=perf_df.columns, title="Cumulative Wealth",
+                template=template, color_discrete_sequence=colors),
         use_container_width=True,
     )
 
@@ -350,7 +333,8 @@ with tab1:
     dd = drawdown(port).rename("Drawdown").reset_index()
     dd.columns = ["Date", "Drawdown"]
     st.plotly_chart(
-        px.area(dd, x="Date", y="Drawdown", title="Drawdown", template=template, color_discrete_sequence=[colors[0]]),
+        px.area(dd, x="Date", y="Drawdown", title="Drawdown",
+                template=template, color_discrete_sequence=[colors[0]]),
         use_container_width=True,
     )
 
@@ -370,8 +354,8 @@ with tab2:
 
     hist_df = pd.DataFrame({"ret": port})
     st.plotly_chart(
-        px.histogram(hist_df, x="ret", nbins=60, title="Return Distribution", template=template,
-                     color_discrete_sequence=[colors[0]]),
+        px.histogram(hist_df, x="ret", nbins=60, title="Return Distribution",
+                     template=template, color_discrete_sequence=[colors[0]]),
         use_container_width=True,
     )
 
@@ -388,14 +372,9 @@ with tab3:
             beta_df = beta.reset_index()
             beta_df.columns = ["Date", "beta"]
             st.plotly_chart(
-                px.line(
-                    beta_df,
-                    x="Date",
-                    y="beta",
-                    title="Rolling 3-Month Beta vs Benchmark",
-                    template=template,
-                    color_discrete_sequence=[colors[0]],
-                ),
+                px.line(beta_df, x="Date", y="beta",
+                        title="Rolling 3-Month Beta vs Benchmark",
+                        template=template, color_discrete_sequence=[colors[0]]),
                 use_container_width=True,
             )
 
@@ -404,18 +383,12 @@ with tab4:
     st.caption("Factor proxies (ETFs): Oil=USO, USD=UUP, Energy=XLE, Rates=IEF")
     factor_syms = ["USO", "UUP", "XLE", "IEF"]
 
-    # If user picked CSV only, stay offline and skip live factors.
     if P["provider"] == "CSV only":
         st.info("Factors require live data. Switch to Stooq or include factor series in your CSV.")
     else:
         fact_prices = get_prices(
-            factor_syms,
-            start=P["start"],
-            end=P["end"],
-            interval=P["interval"],
-            retries=P["retries"],
-            pause=P["pause"],
-            provider="Stooq",                 # always use Stooq for factor proxies here
+            factor_syms, start=P["start"], end=P["end"], interval=P["interval"],
+            retries=P["retries"], pause=P["pause"], provider="Stooq",
             map_tsx_to_us=P["map_tsx_to_us"],
         )
         fact_rets = pct_returns(fact_prices)
@@ -443,41 +416,95 @@ with tab4:
 
     try:
         coefs = res["coef"]  # exists if regression succeeded
-        pred = (
-            coefs.get("const", 0.0)
-            + coefs.get("OIL", 0.0) * oil
-            + coefs.get("RATES", 0.0) * rates
-            + coefs.get("USD", 0.0) * usd
-            + coefs.get("XLE", 0.0) * xle
-        )
+        pred = (coefs.get("const", 0.0) + coefs.get("OIL", 0.0) * oil
+                + coefs.get("RATES", 0.0) * rates + coefs.get("USD", 0.0) * usd
+                + coefs.get("XLE", 0.0) * xle)
         st.metric("Predicted Portfolio Return (Scenario)", f"{pred:.2%}")
     except Exception:
         st.info("Run the regression first to enable scenario projection.")
 
-# ===== Volatility (GARCH) =====
+# ===== Volatility (GARCH) — with EWMA fallback =====
+# ===== Volatility (GARCH) — with richer EWMA fallback & controls =====
 with tab5:
-    st.caption("Fit GARCH(1,1) to portfolio daily returns (optional; requires `arch`).")
+    st.caption("Fit GARCH(1,1) to portfolio daily returns. Falls back to EWMA if GARCH unavailable.")
+
     if port.empty:
-        st.info("Portfolio is empty — cannot fit GARCH.")
-    else:
+        st.info("Portfolio is empty — cannot estimate volatility.")
+        st.stop()
+
+    # Controls
+    c1, c2 = st.columns([2, 1])
+    with c1:
+        horizon = st.slider("Forecast horizon (days)", 5, 60, 20, 5)
+    with c2:
+        annualize = st.toggle("Annualized", value=True)
+
+    try:
+        # Try full GARCH if the `arch` package is available
+        res_g = fit_garch(port)
+        # In-sample conditional volatility from the fitted model (daily)
+        in_sample_sigma = pd.Series(
+            getattr(res_g, "conditional_volatility", pd.Series(dtype=float)),
+            index=port.index,
+            name="GARCH σ (in-sample)"
+        ).dropna()
+
+        # Multi-step ahead forecast (daily)
+        fvols = forecast_vol(res_g, horizon=horizon)
+        hist_label = "GARCH σ (in-sample)"
+        fc_label = "GARCH σ (forecast)"
+        source = "GARCH(1,1)"
+        garch_used = True
+
+    except Exception:
+        # EWMA fallback (RiskMetrics). One-step-ahead is constant across horizon.
+        lam_default = 0.94
+        lam = st.slider("EWMA λ (decay)", 0.80, 0.99, lam_default, 0.01,
+                        help="Higher λ = slower reaction; lower λ = faster.")
+        in_sample_sigma = port.ewm(alpha=1 - lam, adjust=False).std(bias=False).rename("EWMA σ (in-sample)").dropna()
+        fvols = ewma_vol_forecast(port, lam=lam, horizon=horizon)
+        hist_label = "EWMA σ (in-sample)"
+        fc_label = f"EWMA σ (forecast, λ={lam:.2f})"
+        source = "EWMA"
+        garch_used = False
+
+    if in_sample_sigma.empty or fvols.size == 0:
+        st.warning("Could not compute volatility.")
+        st.stop()
+
+    # Annualize if requested
+    scale = np.sqrt(252) if annualize else 1.0
+    in_sample_plot = in_sample_sigma * scale
+    fvols = fvols * scale
+
+    # Build forecast dates (business days right after last observation)
+    start_fc = in_sample_sigma.index[-1] + pd.tseries.offsets.BDay(1)
+    fc_dates = pd.bdate_range(start_fc, periods=len(fvols))
+    fc_df = pd.DataFrame({"Date": fc_dates, fc_label: fvols})
+
+    # Combine historical + forecast for plotting
+    hist_df = in_sample_plot.rename(hist_label).to_frame().reset_index().rename(columns={"index": "Date"})
+    fig_hist = px.line(
+        hist_df, x="Date", y=hist_label, template=template,
+        color_discrete_sequence=[colors[0]], title=None
+    )
+    fig_fc = px.line(
+        fc_df, x="Date", y=fc_label, template=template,
+        color_discrete_sequence=[colors[1]], title=None
+    )
+    # Merge traces
+    for tr in fig_fc.data:
+        fig_hist.add_trace(tr)
+
+    unit = "annualized" if annualize else "daily"
+    fig_hist.update_layout(title=f"Volatility ({source}, {unit}) — in-sample & {horizon}-day forecast")
+    st.plotly_chart(fig_hist, use_container_width=True)
+    st.caption(f"Source: {source}. {'Flat forecast is expected with EWMA.' if not garch_used else 'GARCH path mean-reverts toward long-run variance.'}")
+
+    # Optional: show GARCH parameter table if available
+    if garch_used:
         try:
-            res_g = fit_garch(port)
-            vols = forecast_vol(res_g, horizon=20)
-            vol_df = pd.DataFrame({"Day": np.arange(1, len(vols) + 1), "Daily Vol (Forecast)": vols})
-            st.plotly_chart(
-                px.line(
-                    vol_df,
-                    x="Day",
-                    y="Daily Vol (Forecast)",
-                    title="GARCH Forecasted Daily Volatility (next 20 days)",
-                    template=template,
-                    color_discrete_sequence=[colors[0]],
-                ),
-                use_container_width=True,
-            )
-            try:
-                st.write(res_g.summary().tables[1].as_html(), unsafe_allow_html=True)
-            except Exception:
-                pass
-        except Exception as e:
-            st.warning(f"GARCH not available: {e}")
+            st.write(res_g.summary().tables[1].as_html(), unsafe_allow_html=True)
+        except Exception:
+            pass
+
