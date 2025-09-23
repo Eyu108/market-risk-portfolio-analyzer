@@ -1,0 +1,97 @@
+Eli K Non-Commercial License v1.0 (EK-NC-1.0)
+Copyright (c) 2025 Eli. K
+
+SUMMARY (non-binding):
+You may use, copy, modify, and share this software for NON-COMMERCIAL purposes
+(e.g., personal, educational, research, portfolio/demo). Commercial, production,
+or revenue-generating use requires a separate commercial agreement with the
+Licensor. No warranty; no liability. See the legally binding terms below.
+
+1. Definitions
+“Software” means the contents of this repository, including source code, binary
+forms, documentation, and associated assets. “Licensor” means Eli. K. “You”
+means the individual or entity exercising rights under this license. “Non-Commercial
+Use” means use that is not intended for or directed toward commercial advantage
+or monetary compensation and is not performed on behalf of a for-profit
+organization except for limited evaluation as set out in Section 3(d).
+“Commercial Use” means any use in or for the operation of a business,
+production systems, internal business processes, or revenue-generating activity,
+including providing services to third parties, whether or not you charge for the
+Software itself. “Derivative Works” means modifications to the Software, works
+that incorporate it, or works compiled/linked against it.
+
+2. License Grant (Non-Commercial)
+Subject to the terms and conditions herein, Licensor grants you a worldwide,
+royalty-free, non-exclusive, non-transferable copyright license to:
+   (a) use, reproduce, and modify the Software for Non-Commercial Use;
+   (b) create and use Derivative Works for Non-Commercial Use; and
+   (c) redistribute the Software and Derivative Works for Non-Commercial Use,
+       provided you comply with Section 4 (Conditions) and Section 5 (Attribution).
+
+No trademark, service mark, or patent rights are granted under this license.
+
+3. Prohibited or Restricted Uses
+Without a separate written commercial license from Licensor, you shall NOT:
+   (a) use the Software for Commercial Use or in production environments;
+   (b) provide the Software (or Derivative Works) as part of a product or service
+       to third parties for a fee or other consideration;
+   (c) use the Software to operate internal business processes of a for-profit
+       organization beyond the Evaluation Exception below; or
+   (d) Evaluation Exception: a for-profit entity may evaluate the Software for
+       up to thirty (30) days in non-production systems solely to determine
+       whether to obtain a commercial license. Any continued or production use
+       requires a commercial agreement with Licensor.
+
+4. Conditions (for any redistribution or sharing)
+You must:
+   (a) retain this license text and the copyright notice in all copies and
+       Derivative Works;
+   (b) clearly mark any changes you make; and
+   (c) license your Derivative Works for Non-Commercial Use under terms no less
+       protective than this license (inbound = outbound).
+
+5. Attribution
+In user-visible materials (e.g., documentation, about dialogs, or repository
+README), include: “Includes components by Eli. K”.
+
+6. Contributions
+If you submit contributions to the Software, you license them to Licensor under
+the same terms as this license (inbound = outbound). You represent that you have
+the right to grant such rights.
+
+7. Commercial Licensing
+Commercial, production, or revenue-generating use requires a separate written
+agreement with the Licensor, which may include fees or revenue share. Contact:
+eyuel.kahsay@ucalgary.ca. Until such an agreement is signed, Commercial Use is
+prohibited.
+
+8. Warranty Disclaimer
+THE SOFTWARE IS PROVIDED “AS IS” AND “WITH ALL FAULTS”. LICENSOR DISCLAIMS ALL
+WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+9. Limitation of Liability
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, LICENSOR SHALL NOT BE LIABLE FOR ANY
+INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES,
+NOR FOR ANY LOSS OF PROFITS, REVENUE, DATA, OR GOODWILL, ARISING OUT OF OR
+RELATING TO THIS SOFTWARE OR THIS LICENSE, EVEN IF ADVISED OF THE POSSIBILITY
+OF SUCH DAMAGES. LICENSOR’S TOTAL LIABILITY SHALL NOT EXCEED ONE HUNDRED (100)
+CANADIAN DOLLARS.
+
+10. Termination
+This license terminates automatically if you breach it and fail to cure within
+ten (10) days of notice (or immediately for willful breaches). Upon termination,
+you must cease use and distribution; Sections 5, 8, 9, 11, and 12 survive.
+
+11. Governing Law and Venue
+This license is governed by the laws of Alberta, Canada, without regard to
+conflict-of-law rules. Exclusive venue lies in the provincial or federal courts
+located in Calgary, Alberta, and the parties consent to personal jurisdiction.
+
+12. Miscellaneous
+This is the entire agreement regarding Non-Commercial Use of the Software and
+supersedes prior understandings. If any provision is unenforceable, it will be
+modified to the minimum extent necessary to make it enforceable, and the
+remainder will remain in effect.
+
+Contact for commercial terms: elikahsa@gmail.com
