@@ -1,100 +1,84 @@
-# 📊 Market Risk & Portfolio Analyzer
+# 📊 Market Risk & Portfolio Analyzer — Streamlit App
 
-Jet-black, production-ready **Streamlit** app for portfolio analytics:
-- Performance & drawdowns
-- VaR / CVaR (historical, parametric, Cornish–Fisher)
-- Rolling beta vs benchmark
-- Fast factor regression (ETF proxies) + scenario shocks
-- Volatility modeling with **GARCH(1,1)** *(optional)* and an automatic **EWMA** fallback
+> A fast, interview-ready web app for **portfolio & market risk analytics** with professional visuals and pragmatic risk tooling. Built to showcase practical **quant + data engineering** skills for **energy, trading, and analytics** roles. **Jet‑Black** theme included.
 
-> **No brokerage connection. No API keys required.**  
-> Daily prices from **Stooq** (default) or work fully offline with a **CSV**.
+[![Live Demo – Streamlit](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b?logo=streamlit&logoColor=white)](https://<ADD-YOUR-STREAMLIT-URL>)
+*If the live demo isn’t deployed yet, clone and run locally.*
 
 ---
 
-## 🎯 Why this project (for recruiters & reviewers)
+## Why this project (for reviewers)
 
-This app complements my previous **Trading Strategy Backtester**. Together they demonstrate:
+- **Real-world focus**: portfolio construction, **VaR/CVaR**, rolling **beta**, **factor regression**, and **volatility** modeling.
+- **Robust data plumbing**: default to **Stooq** (no keys), **CSV offline mode**, retry/caching, and warnings that help users fix inputs.
+- **Readable, extendable code**: small `risklab/*` modules (data, metrics, var, factors, garch, portfolio) designed for reuse.
+- **Professional UX**: guided sidebar inputs, informative toasts, and a cohesive **Jet‑Black** visual style.
 
-- **Quant engineering**: factor modeling, risk decomposition, portfolio construction, VaR/CVaR, GARCH/EWMA volatility.
-- **Production-oriented data plumbing**: provider fallbacks, caching, retry/backoff, CSV offline mode.
-- **UX for decision support**: opinionated defaults, guided inputs, informative warnings, and a cohesive **Jet-Black** theme.
-- **Good software practice**: clear module boundaries (`risklab/*`), reproducible env, CI-friendly start commands, safe `.gitignore`.
-
-If you want a 60-second tour, open the app and:
-1) Keep **Data source = Stooq**.  
-2) Use the default `SPY, XLE, CVX` weights (Normalize on).  
-3) Click **Apply / Refresh** → check **Performance** KPIs + **Drawdown**.  
-4) Go to **Risk** → compare Historical vs Parametric VaR/CVaR at the slidered α.  
-5) **Beta** tab → review rolling 3-month beta vs benchmark.  
-6) **Factors** → see quick regression (USO/UUP/XLE/IEF) + try scenario sliders.  
-7) **Volatility** → if `arch` missing you’ll see **EWMA** (flat forecast by design); install `arch` to see mean-reverting **GARCH** paths.
+> Complements my previous **Trading Strategy Backtester** by shifting from *signal testing* to *portfolio-level risk* (VaR, factor exposures, vol).
 
 ---
 
-## 🧱 Tech Stack
+## 60‑second demo
 
-- **Python**, **Streamlit**, **Plotly**
-- **pandas / numpy / statsmodels**
-- Optional: **arch** (GARCH), **pyarrow** (nicer table editor)
-
----
-
-## 📦 Project Structure
-
-```
-market-risk-portfolio-analyzer/
-├─ app.py                      # Streamlit UI (Jet-Black theme via config)
-├─ risklab/
-│  ├─ beta.py                  # rolling_beta
-│  ├─ data.py                  # get_prices (Stooq, CSV), pct_returns
-│  ├─ factors.py               # factor_regression
-│  ├─ garch.py                 # fit_garch, forecast_vol (optional arch)
-│  ├─ metrics.py               # annualize, sharpe/sortino, drawdown, etc.
-│  ├─ portfolio.py             # combine returns, rebalance
-│  └─ var.py                   # VaR/CVaR implementations
-├─ requirements.txt
-└─ .streamlit/
-   └─ config.toml              # Jet-Black theme
-```
+1. **Data source**: keep **Stooq** (default) or use **CSV** in the sidebar.
+2. Enter tickers + weights in the table editor (toggle **Normalize** to rescale).
+3. Choose a **Benchmark** (SPY / Custom) and date range, then **Apply / Refresh**.
+4. Explore tabs:
+   - **Performance**: wealth curve, KPIs, drawdowns
+   - **Risk**: Historical & Parametric VaR/CVaR
+   - **Beta**: rolling beta vs benchmark
+   - **Factors**: ETF proxies (USO/UUP/XLE/IEF) + scenario shocks
+   - **Volatility**: **GARCH(1,1)** if available; otherwise **EWMA** fallback (with λ & horizon controls)
 
 ---
 
-## 🖤 Jet-Black Theme
+## Features
 
-`.streamlit/config.toml` (already included):
-
-```toml
-[theme]
-base = "dark"
-primaryColor = "#22c55e"
-backgroundColor = "#000000"
-secondaryBackgroundColor = "#0a0a0a"
-textColor = "#e5e7eb"
-```
+- **Portfolio builder**
+  - Table editor for tickers & weights (supports **Normalize**)
+  - Monthly / Quarterly / None **rebalancing**
+  - **Benchmark**: SPY or custom
+- **Performance**
+  - Cumulative wealth vs benchmark
+  - KPIs: CAGR, Annualized Vol, Sharpe, Sortino, Hit rate, Max Drawdown
+  - Drawdown curve
+- **Risk**
+  - **VaR/CVaR (Historical)**
+  - **Parametric VaR (Normal)** and **Cornish–Fisher**
+- **Beta**
+  - Rolling 3‑month beta vs benchmark
+- **Factors**
+  - Quick regression using ETF proxies (USO=Oil, UUP=USD, XLE=Energy, IEF=Rates)
+  - Scenario sliders to stress portfolio return
+- **Volatility**
+  - **GARCH(1,1)** (if `arch` installed) with parameter summary
+  - **EWMA** fallback (RiskMetrics‑style) with λ slider; horizon & annualization controls
+- **Data**
+  - **Stooq** (default; no API key)
+  - **CSV offline mode** (wide format with `Date` column)
+  - Optional mapping: **TSX .TO → US** duals
+  - Sample data toggle when live fetch is unavailable
+- **UI / Visuals**
+  - Cohesive **Jet‑Black** theme via `.streamlit/config.toml`
+  - Plotly interactive charts, tooltips, and responsive layout
 
 ---
 
-## 📈 Data Sources
-
-- **Stooq** (default): no API key. Works for many US tickers & common ETFs.  
-  *Optional mapping*: toggle **“Map TSX (.TO) → US”** for simple duals.
-- **CSV**: upload a wide CSV with a `Date` column + one column per ticker (prices).
-
-**CSV example**
-```csv
-Date,SPY,XLE,CVX
-2020-01-02,323.5,60.12,120.4
-2020-01-03,321.9,59.70,118.9
-```
+## Screenshots
+_Add screenshots to `docs/` and uncomment once you have them._
+<!--
+![Performance](docs/screenshot_performance.png)
+![Risk](docs/screenshot_risk.png)
+![Beta](docs/screenshot_beta.png)
+![Factors](docs/screenshot_factors.png)
+![Volatility](docs/screenshot_volatility.png)
+-->
 
 ---
 
-## 🚀 Run Locally
+## Quickstart
 
-> Use your venv’s Python explicitly on Windows to avoid the Microsoft Store alias.
-
-### Windows
+### Windows (recommended path)
 ```bat
 cd "C:\Users\User\Documents\market-risk-portfolio-analyzer"
 python -m venv .venv
@@ -103,6 +87,9 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
+
+> If your OS alias hijacks `python`, call the venv explicitly:
+> `.\.venv\Scripts\python.exe -m streamlit run app.py`
 
 ### macOS / Linux
 ```bash
@@ -115,41 +102,31 @@ python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-**Optional goodies**
+**Optional**
 ```bash
-# Nicer in-app table editor
+# Nicer in‑app table editor
 python -m pip install pyarrow==17.0.0
 
-# Full GARCH (otherwise EWMA fallback is used)
+# Full GARCH (else EWMA fallback is used)
 python -m pip install --only-binary=:all: scipy==1.14.1
 python -m pip install --only-binary=:all: arch==7.2.0
 ```
 
 ---
 
-## ☁️ Deploy: Streamlit Community Cloud (free)
+## Deployment
 
-1. Push this repo to GitHub (already done ✔).
-2. Go to **share.streamlit.io** → **New app**.
-3. Select your repo **Eyu108/market-risk-portfolio-analyzer**, branch `main`, and file `app.py`.
-4. Click **Deploy**.
-5. *(Optional)* in **Advanced settings** set:
-   - Python version: `3.12`
-   - Secrets: **none required**
-6. Wait for the build → your app URL goes live.
+### A) Streamlit Community Cloud (free)
+1. Push to GitHub (this repo).
+2. Go to **https://share.streamlit.io** → **New app**.
+3. Repo: `Eyu108/market-risk-portfolio-analyzer`, Branch: `main`, File: `app.py`.
+4. Advanced → Python version `3.12`. No secrets required.
+5. **Deploy** → share your app URL.
 
----
-
-## 🐳 Deploy: Docker (local or any container host)
-
-Create `Dockerfile` (optional if you want a containerized deploy):
-
+### B) Docker (local or any container host)
+Create `Dockerfile`:
 ```dockerfile
 FROM python:3.12-slim
-
-# System deps (optional, helps scipy wheels etc.)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY requirements.txt /app/
@@ -157,58 +134,49 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
-
 EXPOSE 8501
 CMD ["python", "-m", "streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
 ```
-
 Build & run:
 ```bash
 docker build -t mrpa .
 docker run -p 8501:8501 mrpa
 ```
 
+### C) Render (free tier web service)
+1. Create **Web Service** from your GitHub repo.
+2. **Build**: `pip install --upgrade pip && pip install -r requirements.txt`
+3. **Start**: `streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
+4. Choose Python 3.12 → Deploy.
+
 ---
 
-## 🌐 Deploy: Render (free tier web service)
-
-1) Create a new **Web Service** from your GitHub repo.  
-2) **Build command**:
-```bash
-pip install --upgrade pip && pip install -r requirements.txt
+## Project structure
 ```
-3) **Start command**:
-```bash
-streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+market-risk-portfolio-analyzer/
+├─ app.py                      # Streamlit UI
+├─ risklab/                    # Analytics modules
+│  ├─ beta.py                  # rolling_beta
+│  ├─ data.py                  # get_prices (Stooq, CSV), pct_returns
+│  ├─ factors.py               # factor_regression
+│  ├─ garch.py                 # fit_garch, forecast_vol (optional arch)
+│  ├─ metrics.py               # annualize, sharpe/sortino, drawdown, etc.
+│  ├─ portfolio.py             # combine returns, rebalance
+│  └─ var.py                   # VaR/CVaR implementations
+├─ requirements.txt
+└─ .streamlit/
+   └─ config.toml              # Jet‑Black theme
 ```
-4) Choose Python 3.12, deploy.
 
 ---
 
-## 🧪 Reviewer’s Guide (quick demo flow)
-
-- **Portfolio**: leave defaults `SPY, XLE, CVX` and click **Apply / Refresh**.  
-- **Performance**: note KPIs and the drawdown chart.  
-- **Risk**: move α slider; compare Historical vs Parametric VaR/CVaR.  
-- **Beta**: observe rolling 3-month beta vs benchmark (SPY).  
-- **Factors**: see regression (USO, UUP, XLE, IEF) and try the scenario sliders.  
-- **Volatility**:  
-  - Without `arch`: EWMA (flat forecast).  
-  - With `arch`: GARCH (mean-reverting forecast) + parameter table.
+## Notes & Troubleshooting
+- **Flat vol forecast?** That’s the EWMA fallback (by design). Install `arch` to see GARCH mean‑reversion.
+- **Windows alias error** (“Python was not found”): use the venv path `.\.venv\Scripts\python.exe`.
+- **No data returned**: try shorter ranges, fewer tickers, switch to CSV, or toggle **Sample data**.
+- **Table editor missing**: `pip install pyarrow==17.0.0`.
 
 ---
 
-## 🔒 What’s not committed
-
-`.gitignore` excludes:
-- `.venv/`
-- `.streamlit/secrets.toml`
-- `__pycache__/`, `*.pyc`, IDE folders
-
----
-
-## ⚠️ Disclaimer
-
-Educational purposes only — **not financial advice**.
-
----
+## License & Disclaimer
+For educational/use-at-your-own-risk purposes. **Not financial advice.**
