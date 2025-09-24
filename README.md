@@ -66,14 +66,15 @@
 ---
 
 ## Screenshots
-_Add screenshots to `docs/` and uncomment once you have them._
-<!--
-![Performance](docs/screenshot_performance.png)
-![Risk](docs/screenshot_risk.png)
-![Beta](docs/screenshot_beta.png)
-![Factors](docs/screenshot_factors.png)
-![Volatility](docs/screenshot_volatility.png)
--->
+<!-- README screenshots -->
+![Beta – Rolling 3-Month Beta](docs/04-beta-rolling.jpg)
+![Volatility – EWMA / GARCH](docs/06-volatility-ewma.jpg)
+![Performance Overview](docs/01-performance-overview.jpg)
+![Performance – Sidebar Controls](docs/02-performance-controls.jpg)
+![Risk – VaR & CVaR](docs/03-risk-var-cvar.jpg)
+![Factors – Regression & Scenarios](docs/05-factors-regression-scenarios.jpg)
+
+
 
 ---
 
