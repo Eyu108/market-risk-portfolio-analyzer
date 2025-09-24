@@ -2,7 +2,7 @@
 
 > A fast, web app for **portfolio & market risk analytics** with professional visuals and pragmatic risk tooling. Built to showcase practical **quant + data engineering** skills for **energy, trading, and analytics** roles. **Jet‑Black** theme included.
 
-[![Live Demo – Streamlit](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b?logo=streamlit&logoColor=white)](https://<https://market-risk-portfolio-analyzer.streamlit.app/>)
+[![Live Demo – Streamlit](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b?logo=streamlit&logoColor=white)](https://https://market-risk-portfolio-analyzer.streamlit.app)
 *If the live demo isn’t deployed yet, clone and run locally.*
 
 ---
@@ -111,43 +111,6 @@ python -m pip install pyarrow==17.0.0
 python -m pip install --only-binary=:all: scipy==1.14.1
 python -m pip install --only-binary=:all: arch==7.2.0
 ```
-
----
-
-## Deployment
-
-### A) Streamlit Community Cloud (free)
-1. Push to GitHub (this repo).
-2. Go to **https://share.streamlit.io** → **New app**.
-3. Repo: `Eyu108/market-risk-portfolio-analyzer`, Branch: `main`, File: `app.py`.
-4. Advanced → Python version `3.12`. No secrets required.
-5. **Deploy** → share your app URL.
-
-### B) Docker (local or any container host)
-Create `Dockerfile`:
-```dockerfile
-FROM python:3.12-slim
-
-WORKDIR /app
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-COPY . /app
-EXPOSE 8501
-CMD ["python", "-m", "streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-```
-Build & run:
-```bash
-docker build -t mrpa .
-docker run -p 8501:8501 mrpa
-```
-
-### C) Render (free tier web service)
-1. Create **Web Service** from your GitHub repo.
-2. **Build**: `pip install --upgrade pip && pip install -r requirements.txt`
-3. **Start**: `streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
-4. Choose Python 3.12 → Deploy.
 
 ---
 
