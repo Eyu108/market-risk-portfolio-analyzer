@@ -2,7 +2,7 @@
 
 > A fast, web app for **portfolio & market risk analytics** with professional visuals and pragmatic risk tooling. Built to showcase practical **quant + data engineering** skills for **energy, trading, and analytics** roles. **Jet‑Black** theme included.
 
-[![Live Demo – Streamlit](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b?logo=streamlit&logoColor=white)](https://<ADD-YOUR-STREAMLIT-URL>)
+[![Live Demo – Streamlit](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b?logo=streamlit&logoColor=white)](https://<https://market-risk-portfolio-analyzer.streamlit.app/>)
 *If the live demo isn’t deployed yet, clone and run locally.*
 
 ---
